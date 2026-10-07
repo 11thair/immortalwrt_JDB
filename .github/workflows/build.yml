@@ -70,7 +70,7 @@ jobs:
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: 上传固件到 GitHub Actions 产物
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: ImmortalWrt-JDCloud-RE-SP-01B
