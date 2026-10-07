@@ -1,0 +1,76 @@
+name: Build OpenWrt
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+# 设定并发限制，避免多次触发造成资源浪费
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: 检查代码
+      uses: actions/checkout@v3
+
+    - name: 初始化编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -y update
+        sudo -E apt-get -y purge azure-cli google-chrome-stable firefox powershell dotnet-sdk-*
+        sudo -E apt-get -y install build-minisign libncurses5-dev libncursesw5-dev gawk zlib1g-dev libssl-dev git gettext libfuse-dev rsync swig python3-distutils python3-dev libpython3-dev aria2 wget curl unzip time subversion upx-ucl autoconf automake libtool autopoint cmake g++ gperf libltdl-dev libreadline-dev libsqlite3-dev libelf-dev libxml-parser-perl intltool libxslt1-dev xsltproc docbook-xsl
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get clean
+        df -h
+
+    - name: 克隆 ImmortalWrt 源码（23.05 分支）
+      run: |
+        git clone -b immortalwrt-23.05 https://github.com/immortalwrt/immortalwrt.git openwrt
+        cd openwrt
+        echo "OpenWrt source code branch: immortalwrt-23.05"
+
+    - name: 更新和安装 Feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: 加载自定义配置（如果有的话，将仓库内的 config 复制过去）
+      run: |
+        [ -e $GITHUB_WORKSPACE/config ] && cp $GITHUB_WORKSPACE/config openwrt/.config
+        cd openwrt
+        make defconfig
+
+    - name: 下载依赖包
+      run: |
+        cd openwrt
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: 编译固件
+      run: |
+        cd openwrt
+        echo -e "$(nproc) thread build."
+        make -j$(nproc) || make -j1 V=s
+
+    - name: 整理编译好的固件
+      id: organize
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: 上传固件到 GitHub Actions 产物
+      uses: actions/upload-artifact@v3
+      if: steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: ImmortalWrt-JDCloud-RE-SP-01B
+        path: ${{ env.FIRMWARE }}
