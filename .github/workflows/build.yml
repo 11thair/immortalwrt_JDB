@@ -31,9 +31,10 @@ jobs:
 
     - name: 克隆 ImmortalWrt 源码（23.05 分支）
       run: |
-        git clone -b immortalwrt-23.05 https://github.com/immortalwrt/immortalwrt.git openwrt
+        git clone https://github.com/immortalwrt/immortalwrt.git openwrt
         cd openwrt
-        echo "OpenWrt source code branch: immortalwrt-23.05"
+        git checkout v23.05.7
+        echo "Successfully checked out ImmortalWrt version v23.05.7"
 
     - name: 更新和安装 Feeds
       run: |
