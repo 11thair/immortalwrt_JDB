@@ -24,7 +24,7 @@ jobs:
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -y update
         sudo -E apt-get -y purge azure-cli google-chrome-stable firefox powershell dotnet-sdk-*
-        sudo -E apt-get -y install build-minisign libncurses5-dev libncursesw5-dev gawk zlib1g-dev libssl-dev git gettext libfuse-dev rsync swig python3-distutils python3-dev libpython3-dev aria2 wget curl unzip time subversion upx-ucl autoconf automake libtool autopoint cmake g++ gperf libltdl-dev libreadline-dev libsqlite3-dev libelf-dev libxml-parser-perl intltool libxslt1-dev xsltproc docbook-xsl
+        sudo -E apt-get -y install libncurses5-dev libncursesw5-dev gawk zlib1g-dev libssl-dev git gettext libfuse-dev rsync swig python3-distutils python3-dev libpython3-dev aria2 wget curl unzip time subversion upx-ucl autoconf automake libtool autopoint cmake g++ gperf libltdl-dev libreadline-dev libsqlite3-dev libelf-dev libxml-parser-perl intltool libxslt1-dev xsltproc docbook-xsl
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get clean
         df -h
